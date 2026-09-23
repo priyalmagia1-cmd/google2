@@ -1,0 +1,6 @@
+{
+  "name": "Google Gear Drop",
+  "description": "Redesigned Google Merchandise Store with campaign drops, product discovery, dark mode, multi-currency localization (INR & USD), UPI payment simulation, offline caching, and GA4 tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
