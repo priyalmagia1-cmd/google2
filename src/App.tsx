@@ -5,12 +5,15 @@ import { Footer } from './components/Footer';
 import { HomePage } from './pages/HomePage';
 import { ShopPage } from './pages/ShopPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
+import { WishlistPage } from './pages/WishlistPage';
 import { CartDrawer } from './components/CartDrawer';
 import { SearchOverlay } from './components/SearchOverlay';
 import { GA4InspectorModal } from './components/GA4InspectorModal';
 import { DropAlertsModal } from './components/DropAlertsModal';
 import { ProductQuickView } from './components/ProductQuickView';
 import { LoyaltyRewardsModal } from './components/LoyaltyRewardsModal';
+import { ProductCompareModal } from './components/ProductCompareModal';
+import { CompareFloatingBar } from './components/CompareFloatingBar';
 import { Toast } from './components/Toast';
 
 const MainContent: React.FC = () => {
@@ -19,6 +22,9 @@ const MainContent: React.FC = () => {
   const renderView = () => {
     if (activeView.startsWith('/product/')) {
       return <ProductDetailPage />;
+    }
+    if (activeView === '/wishlist') {
+      return <WishlistPage />;
     }
     if (
       activeView === '/shop' ||
@@ -43,6 +49,8 @@ const MainContent: React.FC = () => {
       <DropAlertsModal />
       <ProductQuickView />
       <LoyaltyRewardsModal />
+      <ProductCompareModal />
+      <CompareFloatingBar />
       <Toast />
     </div>
   );

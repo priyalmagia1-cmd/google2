@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { formatPrice } from '../services/currency';
-import { X, Star, Heart, ShoppingBag, ArrowRight, ShieldCheck, Truck } from 'lucide-react';
+import { X, Star, Heart, ShoppingBag, ArrowRight, ShieldCheck, Truck, ArrowLeftRight } from 'lucide-react';
 
 export const ProductQuickView: React.FC = () => {
   const {
@@ -12,6 +12,8 @@ export const ProductQuickView: React.FC = () => {
     toggleWishlist,
     isInWishlist,
     openProductDetail,
+    isInCompare,
+    toggleCompare,
   } = useApp();
 
   if (!quickViewProduct) return null;
@@ -174,12 +176,26 @@ export const ProductQuickView: React.FC = () => {
               </div>
 
               <button
+                onClick={() => toggleCompare(quickViewProduct)}
+                className={`p-3 rounded-xl border transition-colors ${
+                  isInCompare(quickViewProduct.id)
+                    ? 'border-blue-500 bg-blue-50 text-blue-600 dark:bg-blue-950/40'
+                    : 'border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                }`}
+                title={isInCompare(quickViewProduct.id) ? 'Remove from comparison' : 'Compare product'}
+              >
+                <ArrowLeftRight size={18} />
+              </button>
+
+              <button
                 onClick={() => toggleWishlist(quickViewProduct)}
                 className={`p-3 rounded-xl border transition-colors ${
                   isSaved
                     ? 'border-red-500 bg-red-50 text-red-600 dark:bg-red-950/40'
-                    : 'border-neutral-200 dark:border-neutral-800 text-neutral-600 hover:bg-neutral-100'
+                    : 'border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                 }`}
+                title={isSaved ? 'Remove from Wishlist' : 'Save to Wishlist'}
+                aria-label={isSaved ? 'Remove from Wishlist' : 'Save to Wishlist'}
               >
                 <Heart size={18} fill={isSaved ? 'currentColor' : 'none'} />
               </button>

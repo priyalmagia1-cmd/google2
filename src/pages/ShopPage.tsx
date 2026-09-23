@@ -4,7 +4,7 @@ import { PRODUCTS, CATEGORIES } from '../data/products';
 import { ProductCard } from '../components/ProductCard';
 import { Product, ProductBadge } from '../types';
 import { formatPrice } from '../services/currency';
-import { Filter, SlidersHorizontal, RotateCcw, Search, X } from 'lucide-react';
+import { Filter, SlidersHorizontal, RotateCcw, Search, X, ArrowLeftRight } from 'lucide-react';
 
 export const ShopPage: React.FC = () => {
   const {
@@ -13,6 +13,8 @@ export const ShopPage: React.FC = () => {
     resetFilters,
     currency,
     viewParam,
+    compareItems,
+    setIsCompareModalOpen,
   } = useApp();
 
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
@@ -134,6 +136,20 @@ export const ShopPage: React.FC = () => {
             >
               <Filter size={16} />
               <span>Filters</span>
+            </button>
+
+            {/* Compare Button */}
+            <button
+              onClick={() => setIsCompareModalOpen(true)}
+              className={`text-xs font-bold px-3.5 py-2 rounded-xl border flex items-center gap-1.5 transition-colors ${
+                compareItems.length > 0
+                  ? 'bg-blue-50 dark:bg-blue-950/50 border-blue-300 dark:border-blue-800 text-blue-700 dark:text-blue-300 shadow-2xs'
+                  : 'bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200'
+              }`}
+              title="Compare up to 3 products side-by-side"
+            >
+              <ArrowLeftRight size={14} className={compareItems.length > 0 ? 'text-blue-600 dark:text-blue-400' : ''} />
+              <span>Compare ({compareItems.length}/3)</span>
             </button>
 
             {/* Sort Dropdown */}

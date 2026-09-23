@@ -50,6 +50,21 @@ interface AppContextType {
   isLoyaltyModalOpen: boolean;
   lastCheckinDate: string | null;
 
+  // Product Comparison (up to 3 items)
+  compareItems: Product[];
+  isCompareModalOpen: boolean;
+  setIsCompareModalOpen: (open: boolean) => void;
+  addToCompare: (product: Product) => boolean;
+  removeFromCompare: (productId: string) => void;
+  clearCompare: () => void;
+  toggleCompare: (product: Product) => void;
+  isInCompare: (productId: string) => boolean;
+
+  // Recently Viewed (last 5 viewed products stored in local storage)
+  recentlyViewed: Product[];
+  recordProductView: (product: Product) => void;
+  clearRecentlyViewed: () => void;
+
   // Actions
   addToCart: (product: Product, color?: string, size?: string, quantity?: number) => void;
   removeFromCart: (productId: string, color?: string, size?: string) => void;
@@ -203,6 +218,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return localStorage.getItem('ggd_last_checkin');
   });
 
+  // Product Comparison State (up to 3 items)
+  const [compareItems, setCompareItems] = useState<Product[]>(() => {
+    try {
+      const saved = localStorage.getItem('ggd_compare');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState<boolean>(false);
+
+  // Recently Viewed Products (tracks browsing history, last 5 items)
+  const [recentlyViewed, setRecentlyViewed] = useState<Product[]>(() => {
+    try {
+      const saved = localStorage.getItem('ggd_recently_viewed');
+      if (saved) {
+        const ids: string[] = JSON.parse(saved);
+        const products = ids
+          .map((id) => PRODUCTS.find((p) => p.id === id))
+          .filter((p): p is Product => Boolean(p))
+          .slice(0, 5);
+        return products;
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  });
+
   const loyaltyTier: LoyaltyTier =
     loyaltyPoints >= 3000 ? 'Platinum' :
     loyaltyPoints >= 1500 ? 'Gold' :
@@ -235,6 +279,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem('ggd_unlocked_vouchers', JSON.stringify(unlockedVoucherCodes));
   }, [unlockedVoucherCodes]);
+
+  useEffect(() => {
+    localStorage.setItem('ggd_compare', JSON.stringify(compareItems));
+  }, [compareItems]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      'ggd_recently_viewed',
+      JSON.stringify(recentlyViewed.map((p) => p.id))
+    );
+  }, [recentlyViewed]);
 
   useEffect(() => {
     if (darkMode) {
@@ -303,6 +358,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast(!lowBandwidth ? 'Low-Bandwidth Mode Enabled (Data Saver)' : 'Standard High-Res Media Enabled');
   };
 
+  const recordProductView = (product: Product) => {
+    setRecentlyViewed((prev) => {
+      const remaining = prev.filter((p) => p.id !== product.id);
+      return [product, ...remaining].slice(0, 5);
+    });
+  };
+
+  const clearRecentlyViewed = () => {
+    setRecentlyViewed([]);
+    localStorage.removeItem('ggd_recently_viewed');
+    showToast('Cleared recently viewed history');
+  };
+
   const navigate = (view: string, param?: string) => {
     setActiveView(view);
     setViewParam(param);
@@ -321,6 +389,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const prod = PRODUCTS.find((p) => p.id === param);
       if (prod) {
         setDetailProduct(prod);
+        recordProductView(prod);
         trackGA4Event('view_item', {
           item_id: prod.id,
           item_name: prod.name,
@@ -427,6 +496,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const openQuickView = (product: Product) => {
     setQuickViewProduct(product);
+    recordProductView(product);
     trackGA4Event('quick_view_item', { item_id: product.id, item_name: product.name });
   };
 
@@ -436,6 +506,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const openProductDetail = (product: Product) => {
     setDetailProduct(product);
+    recordProductView(product);
     navigate('/product/' + product.id, product.id);
   };
 
@@ -523,6 +594,45 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const removeVoucher = () => {
     setAppliedVoucher(null);
     showToast('Removed discount voucher');
+  };
+
+  const addToCompare = (product: Product): boolean => {
+    if (compareItems.some((p) => p.id === product.id)) {
+      showToast(`"${product.name}" is already selected for comparison.`);
+      return false;
+    }
+    if (compareItems.length >= 3) {
+      showToast('You can compare up to 3 items at once. Remove one item first.');
+      return false;
+    }
+    const nextList = [...compareItems, product];
+    setCompareItems(nextList);
+    showToast(`Added to comparison (${nextList.length}/3)`);
+    trackGA4Event('add_to_compare', { product_id: product.id, product_name: product.name });
+    return true;
+  };
+
+  const removeFromCompare = (productId: string) => {
+    setCompareItems((prev) => prev.filter((p) => p.id !== productId));
+    trackGA4Event('remove_from_compare', { product_id: productId });
+  };
+
+  const clearCompare = () => {
+    setCompareItems([]);
+    showToast('Cleared product comparison');
+  };
+
+  const toggleCompare = (product: Product) => {
+    if (compareItems.some((p) => p.id === product.id)) {
+      removeFromCompare(product.id);
+      showToast(`Removed "${product.name}" from comparison`);
+    } else {
+      addToCompare(product);
+    }
+  };
+
+  const isInCompare = (productId: string) => {
+    return compareItems.some((p) => p.id === productId);
   };
 
   const placeOrder = async (orderData: Partial<Order>): Promise<Order> => {
@@ -674,6 +784,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         unlockedVoucherCodes,
         isLoyaltyModalOpen,
         lastCheckinDate,
+
+        compareItems,
+        isCompareModalOpen,
+        setIsCompareModalOpen,
+        addToCompare,
+        removeFromCompare,
+        clearCompare,
+        toggleCompare,
+        isInCompare,
+
+        recentlyViewed,
+        recordProductView,
+        clearRecentlyViewed,
 
         addToCart,
         removeFromCart,

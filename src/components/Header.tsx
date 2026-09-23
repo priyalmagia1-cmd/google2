@@ -24,6 +24,7 @@ import {
   Briefcase,
   Coffee,
   Gift,
+  ArrowLeftRight,
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
@@ -42,6 +43,8 @@ export const Header: React.FC = () => {
     filters,
     loyaltyPoints,
     setIsLoyaltyModalOpen,
+    compareItems,
+    setIsCompareModalOpen,
     setIsCartDrawerOpen,
     setIsSearchOverlayOpen,
     setIsGA4ModalOpen,
@@ -62,6 +65,7 @@ export const Header: React.FC = () => {
     { label: 'Drinkware', path: '/category/drinkware' },
     { label: 'Gifts', path: '/category/gifts' },
     { label: 'All Gear', path: '/shop' },
+    { label: 'Wishlist', path: '/wishlist', badge: wishlist.length > 0 ? `${wishlist.length}` : undefined },
   ];
 
   const categoryNavItems = [
@@ -234,15 +238,33 @@ export const Header: React.FC = () => {
               {darkMode ? <Sun size={20} className="text-yellow-400" /> : <Moon size={20} />}
             </button>
 
+            {/* Compare Button */}
+            <button
+              onClick={() => setIsCompareModalOpen(true)}
+              className="p-2 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors relative"
+              title={`Compare Products (${compareItems.length}/3)`}
+            >
+              <ArrowLeftRight size={20} />
+              {compareItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                  {compareItems.length}
+                </span>
+              )}
+            </button>
+
             {/* Wishlist Button */}
             <button
               onClick={() => navigate('/wishlist')}
-              className="p-2 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-full transition-colors relative"
-              title="Wishlist"
+              className={`p-2 rounded-full transition-colors relative ${
+                activeView === '/wishlist'
+                  ? 'text-red-500 bg-red-50 dark:bg-red-950/60'
+                  : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+              }`}
+              title={`Wishlist (${wishlist.length} saved)`}
             >
-              <Heart size={20} />
+              <Heart size={20} fill={activeView === '/wishlist' || wishlist.length > 0 ? 'currentColor' : 'none'} className={wishlist.length > 0 ? 'text-red-500' : ''} />
               {wishlist.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
                   {wishlist.length}
                 </span>
               )}

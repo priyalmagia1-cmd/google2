@@ -4,6 +4,7 @@ import { NewDropSection } from '../components/NewDropSection';
 import { DropCountdown } from '../components/DropCountdown';
 import { CategoryGrid } from '../components/CategoryGrid';
 import { TrendingCarousel } from '../components/TrendingCarousel';
+import { RecentlyViewedSection } from '../components/RecentlyViewedSection';
 import { HiddenGemsSection } from '../components/HiddenGemsSection';
 import { ChromeDinoFeature } from '../components/ChromeDinoFeature';
 import { StreetwearSection } from '../components/StreetwearSection';
@@ -24,6 +25,7 @@ export const HomePage: React.FC = () => {
       <LoyaltyBanner />
       <CategoryGrid />
       <TrendingCarousel />
+      <RecentlyViewedSection />
       <HiddenGemsSection />
       <ChromeDinoFeature />
       <StreetwearSection />

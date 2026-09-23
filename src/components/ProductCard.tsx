@@ -2,7 +2,7 @@ import React from 'react';
 import { Product } from '../types';
 import { useApp } from '../context/AppContext';
 import { formatPrice } from '../services/currency';
-import { Heart, Star, Eye, ShoppingBag, Sparkles } from 'lucide-react';
+import { Heart, Star, Eye, ShoppingBag, Sparkles, ArrowLeftRight } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -17,9 +17,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     openQuickView,
     openProductDetail,
     lowBandwidth,
+    isInCompare,
+    toggleCompare,
   } = useApp();
 
   const isSaved = isInWishlist(product.id);
+  const isCompared = isInCompare(product.id);
 
   const badgeColor = (badge: string) => {
     switch (badge) {
@@ -68,43 +71,78 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           ))}
         </div>
 
-        {/* Wishlist Button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleWishlist(product);
-          }}
-          className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-all z-10 ${
-            isSaved
-              ? 'bg-red-500 text-white shadow-md'
-              : 'bg-white/80 dark:bg-neutral-900/80 text-neutral-700 dark:text-neutral-200 hover:bg-white hover:text-red-500'
-          }`}
-          title={isSaved ? 'Remove from Wishlist' : 'Save to Wishlist'}
-        >
-          <Heart size={18} fill={isSaved ? 'currentColor' : 'none'} />
-        </button>
+        {/* Top-Right Action Buttons */}
+        <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
+          {/* Compare Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleCompare(product);
+            }}
+            className={`p-2 rounded-full backdrop-blur-md transition-all shadow-xs ${
+              isCompared
+                ? 'bg-blue-600 text-white shadow-md scale-105'
+                : 'bg-white/80 dark:bg-neutral-900/80 text-neutral-700 dark:text-neutral-200 hover:bg-white hover:text-blue-600 dark:hover:text-blue-400'
+            }`}
+            title={isCompared ? 'Remove from Comparison' : 'Compare product side-by-side'}
+          >
+            <ArrowLeftRight size={16} />
+          </button>
+
+          {/* Wishlist Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleWishlist(product);
+            }}
+            aria-label={isSaved ? `Remove ${product.name} from Wishlist` : `Save ${product.name} to Wishlist`}
+            className={`p-2 rounded-full backdrop-blur-md transition-all duration-200 hover:scale-110 active:scale-90 ${
+              isSaved
+                ? 'bg-red-500 text-white shadow-md ring-2 ring-red-400/40 scale-105'
+                : 'bg-white/85 dark:bg-neutral-900/85 text-neutral-700 dark:text-neutral-200 hover:bg-white hover:text-red-500 shadow-2xs'
+            }`}
+            title={isSaved ? 'Remove from Wishlist' : 'Save to Wishlist'}
+          >
+            <Heart size={16} fill={isSaved ? 'currentColor' : 'none'} className={isSaved ? 'text-white' : ''} />
+          </button>
+        </div>
 
         {/* Hover Quick Action Overlay */}
-        <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+        <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/75 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-1.5">
           <button
             onClick={(e) => {
               e.stopPropagation();
               openQuickView(product);
             }}
-            className="bg-white/90 hover:bg-white text-neutral-900 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-md transition-colors"
+            className="bg-white/90 hover:bg-white text-neutral-900 text-xs font-bold px-2.5 py-2 rounded-xl flex items-center gap-1 shadow-md transition-colors"
           >
-            <Eye size={15} />
+            <Eye size={14} />
             Quick View
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleCompare(product);
+            }}
+            className={`text-xs font-bold px-2.5 py-2 rounded-xl flex items-center gap-1 shadow-md transition-colors ${
+              isCompared
+                ? 'bg-blue-600 text-white hover:bg-blue-500'
+                : 'bg-white/90 hover:bg-white text-neutral-900'
+            }`}
+            title="Compare up to 3 items side-by-side"
+          >
+            <ArrowLeftRight size={14} />
+            <span>{isCompared ? 'Comparing' : 'Compare'}</span>
           </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
               addToCart(product);
             }}
-            className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-md transition-colors"
+            className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-2.5 py-2 rounded-xl flex items-center gap-1 shadow-md transition-colors"
           >
-            <ShoppingBag size={15} />
-            Quick Add
+            <ShoppingBag size={14} />
+            Add
           </button>
         </div>
       </div>

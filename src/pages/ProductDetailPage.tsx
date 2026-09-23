@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { formatPrice } from '../services/currency';
 import { PRODUCTS } from '../data/products';
@@ -15,6 +15,7 @@ import {
   ArrowLeft,
   Leaf,
   Award,
+  ArrowLeftRight,
 } from 'lucide-react';
 
 export const ProductDetailPage: React.FC = () => {
@@ -26,10 +27,21 @@ export const ProductDetailPage: React.FC = () => {
     isInWishlist,
     navigate,
     setIsCartDrawerOpen,
+    isInCompare,
+    toggleCompare,
+    setIsCompareModalOpen,
+    compareItems,
+    recordProductView,
   } = useApp();
 
   // Fallback to first product if none selected
   const product = detailProduct || PRODUCTS[0];
+
+  useEffect(() => {
+    if (product) {
+      recordProductView(product);
+    }
+  }, [product?.id]);
 
   const [selectedImage, setSelectedImage] = useState(product.gallery?.[0] || product.image);
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0]?.name || '');
@@ -37,6 +49,7 @@ export const ProductDetailPage: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
 
   const isSaved = isInWishlist(product.id);
+  const isCompared = isInCompare(product.id);
 
   // Recommendations
   const recommendations = PRODUCTS.filter((p) => p.id !== product.id && p.category === product.category).slice(0, 3);
@@ -75,16 +88,31 @@ export const ProductDetailPage: React.FC = () => {
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
               />
-              <button
-                onClick={() => toggleWishlist(product)}
-                className={`absolute top-4 right-4 p-3 rounded-full backdrop-blur-md transition-all z-10 ${
-                  isSaved
-                    ? 'bg-red-500 text-white shadow-md'
-                    : 'bg-white/80 dark:bg-neutral-900/80 text-neutral-700 dark:text-neutral-200 hover:text-red-500'
-                }`}
-              >
-                <Heart size={20} fill={isSaved ? 'currentColor' : 'none'} />
-              </button>
+              {/* Action Buttons Overlay */}
+              <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+                <button
+                  onClick={() => toggleCompare(product)}
+                  className={`p-3 rounded-full backdrop-blur-md transition-all shadow-xs ${
+                    isCompared
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-white/80 dark:bg-neutral-900/80 text-neutral-700 dark:text-neutral-200 hover:text-blue-600'
+                  }`}
+                  title={isCompared ? 'Remove from Comparison' : 'Compare product side-by-side'}
+                >
+                  <ArrowLeftRight size={18} />
+                </button>
+                <button
+                  onClick={() => toggleWishlist(product)}
+                  className={`p-3 rounded-full backdrop-blur-md transition-all ${
+                    isSaved
+                      ? 'bg-red-500 text-white shadow-md'
+                      : 'bg-white/80 dark:bg-neutral-900/80 text-neutral-700 dark:text-neutral-200 hover:text-red-500'
+                  }`}
+                  title={isSaved ? 'Remove from Wishlist' : 'Save to Wishlist'}
+                >
+                  <Heart size={18} fill={isSaved ? 'currentColor' : 'none'} />
+                </button>
+              </div>
             </div>
 
             {product.gallery && product.gallery.length > 1 && (
@@ -243,6 +271,19 @@ export const ProductDetailPage: React.FC = () => {
                   <ShoppingBag size={18} />
                   <span>ADD TO CART ({formatPrice(product.priceUSD * quantity, currency)})</span>
                 </button>
+
+                <button
+                  onClick={() => toggleWishlist(product)}
+                  className={`p-3.5 rounded-xl border transition-all flex items-center justify-center ${
+                    isSaved
+                      ? 'bg-red-50 dark:bg-red-950/60 border-red-300 dark:border-red-800 text-red-500'
+                      : 'border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:text-red-500 hover:border-red-300'
+                  }`}
+                  title={isSaved ? 'Remove from Wishlist' : 'Save to Wishlist'}
+                  aria-label={isSaved ? 'Remove from Wishlist' : 'Save to Wishlist'}
+                >
+                  <Heart size={18} fill={isSaved ? 'currentColor' : 'none'} />
+                </button>
               </div>
 
               <button
@@ -251,6 +292,35 @@ export const ProductDetailPage: React.FC = () => {
               >
                 BUY NOW WITH INSTANT CHECKOUT
               </button>
+
+              {/* Compare Button Row */}
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  onClick={() => toggleCompare(product)}
+                  className={`flex-1 py-3 px-4 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                    isCompared
+                      ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-400 dark:border-blue-700 text-blue-700 dark:text-blue-300'
+                      : 'bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+                  }`}
+                >
+                  <ArrowLeftRight size={15} />
+                  <span>
+                    {isCompared
+                      ? 'In Comparison Set (Click to Remove)'
+                      : 'Compare with Other Gear (up to 3 items)'}
+                  </span>
+                </button>
+
+                {compareItems.length > 0 && (
+                  <button
+                    onClick={() => setIsCompareModalOpen(true)}
+                    className="py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black transition-all flex items-center gap-1.5 shadow-xs flex-shrink-0"
+                    title="Open Side-by-Side Comparison"
+                  >
+                    <span>View ({compareItems.length})</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Trust Badges */}
